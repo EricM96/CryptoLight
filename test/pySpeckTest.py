@@ -1,8 +1,8 @@
-import pySpeck 
+import CryptoLight
 
 def main():
     plaintext = b'Hello World!'
-    pySpeck.encrypt(plaintext)
+    CryptoLight.encrypt(plaintext)
     print(plaintext)
     
 if __name__ == "__main__":

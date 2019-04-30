@@ -1,7 +1,7 @@
 echo ----BUILDING EXTENSION----
 python3 setup.py build
 echo ----EXTENSION BUILT COPYING FILES----
-cp build/lib.linux-x86_64-3.6/pySpeck.cpython-36m-x86_64-linux-gnu.so ../test/
+cp build/lib.linux-x86_64-3.6/CryptoLight.cpython-36m-x86_64-linux-gnu.so ../test/
 echo ----REMOVING BUILD FILES----
 rm -r build/
 echo --------------------

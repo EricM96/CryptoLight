@@ -2,14 +2,14 @@
 #include <iostream> 
 #include <string>
 
-#include "../../speck_test/cryptopp/modes.h"
-#include "../../speck_test/cryptopp/speck.h"
-#include "../../speck_test/cryptopp/filters.h"
-#include "../../speck_test/cryptopp/cryptlib.h"
-#include "../../speck_test/cryptopp/secblock.h"
-#include "../../speck_test/cryptopp/osrng.h"
-#include "../../speck_test/cryptopp/hex.h"
-#include "../../speck_test/cryptopp/files.h"
+#include "cryptopp/modes.h"
+#include "cryptopp/speck.h"
+#include "cryptopp/filters.h"
+#include "cryptopp/cryptlib.h"
+#include "cryptopp/secblock.h"
+#include "cryptopp/osrng.h"
+#include "cryptopp/hex.h"
+#include "cryptopp/files.h"
 
 //int cEncrypt(Py_buffer message) {
 int cEncrypt(char *msg) {
