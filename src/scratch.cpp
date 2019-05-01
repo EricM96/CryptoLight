@@ -26,7 +26,7 @@ int cGenerateKey(void) {
 }
 
 std::string cEncrypt(char *plain_text) {
-    std::string cipher_text;
+    std::string cipher_text, iv_string;
     // read key from file
     SecByteBlock key(SPECK128::DEFAULT_KEYLENGTH);
     FileSource fs("key.bin", true, new ArraySink(key.begin(), key.size()));
@@ -36,12 +36,21 @@ std::string cEncrypt(char *plain_text) {
     byte iv[SPECK128::BLOCKSIZE];
     rng.GenerateBlock(iv, sizeof(iv));
 
+    StringSource(iv, sizeof(iv), true, new HexEncoder(
+                            new StringSink(iv_string)));
+
     CBC_Mode<SPECK128>::Encryption e;
     e.SetKeyWithIV(key, key.size(), iv);
 
     StringSource(plain_text, true, new StreamTransformationFilter(e, 
                                             new StringSink(cipher_text)));
 
+    std::cout << iv_string+cipher_text << "\n";
+
+    return iv_string + cipher_text;
+}
+
+std::string cDecrypt(char *cipher_text, byte iv[SPECK128::BLOCKSIZE]) {
     return cipher_text;
 }
 
