@@ -3,8 +3,9 @@ import CryptoLight
 def main():
     CryptoLight.generateKey()
     plaintext = b'Hello World!'
-    CryptoLight.encrypt(plaintext)
     print(plaintext)
+    cihpertext = CryptoLight.encrypt(plaintext)
+    print(cihpertext)
     
 if __name__ == "__main__":
     main() 

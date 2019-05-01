@@ -14,6 +14,7 @@
 using namespace CryptoPP;
 
 int cGenerateKey(void) {
+    // TODO add method of adding key to libraries current directory
     AutoSeededRandomPool prng;
 
     SecByteBlock key(SPECK128::DEFAULT_KEYLENGTH);
@@ -24,17 +25,24 @@ int cGenerateKey(void) {
     return 0;
 }
 
-int cEncrypt(char *msg) {
+std::string cEncrypt(char *plain_text) {
+    std::string cipher_text;
+    // read key from file
     SecByteBlock key(SPECK128::DEFAULT_KEYLENGTH);
     FileSource fs("key.bin", true, new ArraySink(key.begin(), key.size()));
 
-    std::cout << "Key: ";
-    StringSource(key, key.size(), true,
-                           new HexEncoder(new FileSink(
-                               std::cout)));
-    std::cout << std::endl;
+    // Create IV for encryption
+    AutoSeededRandomPool rng;   //TODO: add rng to a file so you don't have to make a new one every time
+    byte iv[SPECK128::BLOCKSIZE];
+    rng.GenerateBlock(iv, sizeof(iv));
 
-    return 0;
+    CBC_Mode<SPECK128>::Encryption e;
+    e.SetKeyWithIV(key, key.size(), iv);
+
+    StringSource(plain_text, true, new StreamTransformationFilter(e, 
+                                            new StringSink(cipher_text)));
+
+    return cipher_text;
 }
 
 static PyObject *generateKey(PyObject *self, PyObject *args) {
@@ -47,8 +55,8 @@ static PyObject *encrypt(PyObject *self, PyObject *args) {
     if (!PyArg_ParseTuple(args, "y", &msg)) {
         return NULL;
     } else {
-        int result = cEncrypt(msg);
-        return Py_BuildValue("i", result);
+        std::string result = cEncrypt(msg);
+        return Py_BuildValue("y", result);
     }
 }
 
