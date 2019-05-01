@@ -45,9 +45,11 @@ std::string cEncrypt(char *plain_text) {
     StringSource(plain_text, true, new StreamTransformationFilter(e, 
                                             new StringSink(cipher_text)));
 
-    std::cout << iv_string+cipher_text << "\n";
+    std::string aggregate_string = iv_string + cipher_text;
 
-    return iv_string + cipher_text;
+    std::cout << aggregate_string << "\n";
+
+    return aggregate_string;
 }
 
 std::string cDecrypt(char *cipher_text, byte iv[SPECK128::BLOCKSIZE]) {
@@ -65,13 +67,28 @@ static PyObject *encrypt(PyObject *self, PyObject *args) {
         return NULL;
     } else {
         std::string result = cEncrypt(msg);
-        return Py_BuildValue("y", result);
+        int len = result.size();
+        std::cout << len << std::endl;
+        return Py_BuildValue("y#", result, len);
+    }
+}
+
+static PyObject *decrypt(PyObject *self, PyObject *args) {
+    const char *msg;
+    int count;
+    if (!PyArg_ParseTuple(args, "s#", &msg, &count)) {
+        return NULL;
+    } else {
+        std::cout << "Message: " << msg << "\n";
+        std::cout << "Count: " << count << "\n";
+        return Py_BuildValue("i", 0);
     }
 }
 
 static PyMethodDef CryptoLightMethods[] = {
     {"generateKey", generateKey, METH_NOARGS, "Generates key for encryption and stores it in a file"},
     {"encrypt", encrypt, METH_VARARGS, "Encrypts bytestring"},
+    {"decrypt", decrypt, METH_VARARGS, "Decrypts bytestring"},
     {NULL, NULL, 0, NULL} // Sentinel 
 };
 
