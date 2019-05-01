@@ -11,19 +11,35 @@
 #include "cryptopp/hex.h"
 #include "cryptopp/files.h"
 
-int cEncrypt(char *msg) {
-    CryptoPP::AutoSeededRandomPool prng;
+using namespace CryptoPP;
 
-    CryptoPP::SecByteBlock key(CryptoPP::SPECK128::DEFAULT_KEYLENGTH);
+int cGenerateKey(void) {
+    AutoSeededRandomPool prng;
+
+    SecByteBlock key(SPECK128::DEFAULT_KEYLENGTH);
     prng.GenerateBlock(key, key.size());
 
+    ArraySource as(key, sizeof(key), true, new FileSink("key.bin"));
+
+    return 0;
+}
+
+int cEncrypt(char *msg) {
+    SecByteBlock key(SPECK128::DEFAULT_KEYLENGTH);
+    FileSource fs("key.bin", true, new ArraySink(key.begin(), key.size()));
+
     std::cout << "Key: ";
-    CryptoPP::StringSource(key, key.size(), true,
-                           new CryptoPP::HexEncoder(new CryptoPP::FileSink(
+    StringSource(key, key.size(), true,
+                           new HexEncoder(new FileSink(
                                std::cout)));
     std::cout << std::endl;
 
     return 0;
+}
+
+static PyObject *generateKey(PyObject *self, PyObject *args) {
+    int result = cGenerateKey();
+    return Py_BuildValue("i", result);
 }
 
 static PyObject *encrypt(PyObject *self, PyObject *args) {
@@ -37,6 +53,7 @@ static PyObject *encrypt(PyObject *self, PyObject *args) {
 }
 
 static PyMethodDef CryptoLightMethods[] = {
+    {"generateKey", generateKey, METH_NOARGS, "Generates key for encryption and stores it in a file"},
     {"encrypt", encrypt, METH_VARARGS, "Encrypts bytestring"},
     {NULL, NULL, 0, NULL} // Sentinel 
 };
