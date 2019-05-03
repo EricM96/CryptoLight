@@ -29,7 +29,7 @@ std::string cEncrypt(char *plain_text) {
     std::string cipher_text, iv_string;
     // read key from file
     SecByteBlock key(SPECK128::DEFAULT_KEYLENGTH);
-    FileSource fs("key.bin", true, new ArraySink(key.begin(), key.size()));
+    FileSource("key.bin", true, new ArraySink(key.begin(), key.size()));
 
     // Create IV for encryption
     AutoSeededRandomPool rng;   //TODO: add rng to a file so you don't have to make a new one every time
@@ -39,6 +39,11 @@ std::string cEncrypt(char *plain_text) {
     StringSource(iv, sizeof(iv), true, new HexEncoder(
                             new StringSink(iv_string)));
 
+    std::cout << "Original IV: ";
+    CryptoPP::StringSource(iv, sizeof(iv), true, new CryptoPP::HexEncoder(
+                            new CryptoPP::FileSink(std::cout)));
+    std::cout << std::endl;
+
     CBC_Mode<SPECK128>::Encryption e;
     e.SetKeyWithIV(key, key.size(), iv);
 
@@ -47,13 +52,44 @@ std::string cEncrypt(char *plain_text) {
 
     std::string aggregate_string = iv_string + cipher_text;
 
-    std::cout << aggregate_string << "\n";
-
     return aggregate_string;
 }
 
-std::string cDecrypt(char *cipher_text, byte iv[SPECK128::BLOCKSIZE]) {
-    return cipher_text;
+std::string cDecrypt(std::string aggregate_str) {
+    std::string plain_text;
+
+    byte iv[SPECK128::BLOCKSIZE];
+    std::string iv_string = aggregate_str.substr(0, 32);
+    std::string cipher_text = aggregate_str.substr(32);
+
+    // std::cout << "Decrypt IV: " << iv_string << std::endl;
+    // std::cout << "Decrypt CT: " << cipher_text << std::endl;
+
+    SecByteBlock key(SPECK128::DEFAULT_KEYLENGTH);
+    FileSource("key.bin", true, new ArraySink(key.begin(), key.size()));
+
+    StringSource(iv_string, true, new HexDecoder(new ArraySink(iv, SPECK128::BLOCKSIZE)));
+
+    // StringSource iv_source(cipher_text, false, new H); 
+    // ArraySink iv_sink(iv, SPECK128::BLOCKSIZE);
+
+    // iv_source.Detach(new Redirector(iv_sink));
+    // iv_source.Pump(SPECK128::BLOCKSIZE);
+
+    std::cout << "Recovered IV: ";
+    CryptoPP::StringSource(iv, sizeof(iv), true, new CryptoPP::HexEncoder(
+                            new CryptoPP::FileSink(std::cout)));
+    std::cout << std::endl;
+
+    CBC_Mode<SPECK128>::Decryption d;
+    d.SetKeyWithIV(key, key.size(), iv);
+
+    StringSource(cipher_text, true, new StreamTransformationFilter(d, 
+                                            new StringSink(plain_text)));
+
+    std::cout << "Recovered plaintext: " << plain_text << std::endl;
+
+    return plain_text;
 }
 
 static PyObject *generateKey(PyObject *self, PyObject *args) {
@@ -68,8 +104,8 @@ static PyObject *encrypt(PyObject *self, PyObject *args) {
         return NULL;
     } else {
         std::string cipher_text = cEncrypt(msg);
-        int len = cipher_text.size();
-        std::cout << len << std::endl;
+        //int len = cipher_text.size();
+        //std::cout << len << std::endl;
         result = PyBytes_FromString(cipher_text.c_str());
         return result;
     }
@@ -77,11 +113,14 @@ static PyObject *encrypt(PyObject *self, PyObject *args) {
 
 static PyObject *decrypt(PyObject *self, PyObject *args) {
     char *msg;
+    PyObject *result;
     if (!PyArg_ParseTuple(args, "y", &msg)) {
         return NULL;
     } else {
-        std::cout << "Message: " << msg << "\n";
-        return Py_BuildValue("i", 0);
+        //std::cout << "Received message: " <<  msg << std::endl;
+        std::string plain_text = cDecrypt(msg);
+        result = PyBytes_FromString(plain_text.c_str());
+        return result;
     }
 }
 

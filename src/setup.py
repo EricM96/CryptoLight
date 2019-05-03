@@ -1,6 +1,6 @@
 from distutils.core import setup, Extension
 
-CryptoLight = Extension("CryptoLight", sources=["scratch.cpp"],
+CryptoLight = Extension("CryptoLight", sources=["cryptolight.cpp"],
                                        #include_dirs=["/usr/local/include"],
                                        libraries=["cryptopp"],
                                        #runtime_library_dirs=["/usr/local/lib"]
