@@ -1,13 +1,17 @@
 import CryptoLight
+import random, string
 
 def main():
     CryptoLight.generateKey()
-    plaintext = b'Another string againaaaaa'
+    letters = string.ascii_lowercase
+    plaintext = ''.join(random.choice(letters) for i in range(100)).encode()
     print(plaintext)
-    cihpertext = CryptoLight.encrypt(plaintext)
-    print(cihpertext)
-    print(len(cihpertext))
-    recovered_plaintext = CryptoLight.decrypt(cihpertext)
+    ciphertext = CryptoLight.encrypt(plaintext)
+    while b'\x00' in ciphertext:
+        print("__________error in encryption, reencrypting___________")
+        ciphertext = CryptoLight.encrypt(plaintext)
+    print(ciphertext)
+    recovered_plaintext = CryptoLight.decrypt(ciphertext)
     print(recovered_plaintext)
     
 if __name__ == "__main__":

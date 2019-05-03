@@ -39,10 +39,10 @@ std::string cEncrypt(char *plain_text) {
     StringSource(iv, sizeof(iv), true, new HexEncoder(
                             new StringSink(iv_string)));
 
-    std::cout << "Original IV: ";
-    CryptoPP::StringSource(iv, sizeof(iv), true, new CryptoPP::HexEncoder(
-                            new CryptoPP::FileSink(std::cout)));
-    std::cout << std::endl;
+    // std::cout << "Original IV: ";
+    // CryptoPP::StringSource(iv, sizeof(iv), true, new CryptoPP::HexEncoder(
+    //                         new CryptoPP::FileSink(std::cout)));
+    // std::cout << std::endl;
 
     CBC_Mode<SPECK128>::Encryption e;
     e.SetKeyWithIV(key, key.size(), iv);
@@ -76,10 +76,10 @@ std::string cDecrypt(std::string aggregate_str) {
     // iv_source.Detach(new Redirector(iv_sink));
     // iv_source.Pump(SPECK128::BLOCKSIZE);
 
-    std::cout << "Recovered IV: ";
-    CryptoPP::StringSource(iv, sizeof(iv), true, new CryptoPP::HexEncoder(
-                            new CryptoPP::FileSink(std::cout)));
-    std::cout << std::endl;
+    // std::cout << "Recovered IV: ";
+    // CryptoPP::StringSource(iv, sizeof(iv), true, new CryptoPP::HexEncoder(
+    //                         new CryptoPP::FileSink(std::cout)));
+    // std::cout << std::endl;
 
     CBC_Mode<SPECK128>::Decryption d;
     d.SetKeyWithIV(key, key.size(), iv);
@@ -87,7 +87,7 @@ std::string cDecrypt(std::string aggregate_str) {
     StringSource(cipher_text, true, new StreamTransformationFilter(d, 
                                             new StringSink(plain_text)));
 
-    std::cout << "Recovered plaintext: " << plain_text << std::endl;
+    // std::cout << "Recovered plaintext: " << plain_text << std::endl;
 
     return plain_text;
 }
@@ -106,20 +106,29 @@ static PyObject *encrypt(PyObject *self, PyObject *args) {
         std::string cipher_text = cEncrypt(msg);
         //int len = cipher_text.size();
         //std::cout << len << std::endl;
-        result = PyBytes_FromString(cipher_text.c_str());
+        // std::cout << "Sending string of length: " << cipher_text.size() << std::endl;
+        result = PyBytes_FromStringAndSize(cipher_text.c_str(), cipher_text.size());
+        // std::cout << "Sent Byte Size: " << PyBytes_GET_SIZE(result) << std::endl;
         return result;
     }
 }
 
 static PyObject *decrypt(PyObject *self, PyObject *args) {
-    char *msg;
+    //char *msg;
+    PyObject* msg;
+    const char *cipher_text;
     PyObject *result;
-    if (!PyArg_ParseTuple(args, "y", &msg)) {
+    if (!PyArg_ParseTuple(args, "S", &msg)) {
         return NULL;
     } else {
         //std::cout << "Received message: " <<  msg << std::endl;
-        std::string plain_text = cDecrypt(msg);
-        result = PyBytes_FromString(plain_text.c_str());
+        Py_ssize_t len = PyBytes_GET_SIZE(msg);
+
+        //char *cipher_text;
+        // std::cout << "Received Byte Size: " << len << std::endl;
+        cipher_text = PyBytes_AsString(msg);
+        std::string plain_text = cDecrypt(cipher_text);
+        result = PyBytes_FromStringAndSize(plain_text.c_str(), plain_text.size());
         return result;
     }
 }
