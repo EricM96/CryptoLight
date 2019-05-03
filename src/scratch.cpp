@@ -63,24 +63,24 @@ static PyObject *generateKey(PyObject *self, PyObject *args) {
 
 static PyObject *encrypt(PyObject *self, PyObject *args) {
     char *msg;
+    PyObject *result;
     if (!PyArg_ParseTuple(args, "y", &msg)) {
         return NULL;
     } else {
-        std::string result = cEncrypt(msg);
-        int len = result.size();
+        std::string cipher_text = cEncrypt(msg);
+        int len = cipher_text.size();
         std::cout << len << std::endl;
-        return Py_BuildValue("y#", result, len);
+        result = PyBytes_FromString(cipher_text.c_str());
+        return result;
     }
 }
 
 static PyObject *decrypt(PyObject *self, PyObject *args) {
-    const char *msg;
-    int count;
-    if (!PyArg_ParseTuple(args, "s#", &msg, &count)) {
+    char *msg;
+    if (!PyArg_ParseTuple(args, "y", &msg)) {
         return NULL;
     } else {
         std::cout << "Message: " << msg << "\n";
-        std::cout << "Count: " << count << "\n";
         return Py_BuildValue("i", 0);
     }
 }
