@@ -1,12 +1,12 @@
 from distutils.core import setup, Extension
 
-CryptoLight = Extension("CryptoLight", sources=["cryptolight.cpp"],
+CryptoLightFunctions = Extension("CryptoLightFunctions", sources=["cryptolight.cpp"],
                                        #include_dirs=["/usr/local/include"],
                                        libraries=["cryptopp"],
                                        #runtime_library_dirs=["/usr/local/lib"]
                                        )
 
-setup(name="CryptoLight",
+setup(name="CryptoLightFunctions",
       version="0.1",
       description="Performant speck code for Python IoT systems.",
-      ext_modules=[CryptoLight])
+      ext_modules=[CryptoLightFunctions])

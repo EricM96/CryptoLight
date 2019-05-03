@@ -122,7 +122,6 @@ static PyObject *decrypt(PyObject *self, PyObject *args) {
         return NULL;
     } else {
         //std::cout << "Received message: " <<  msg << std::endl;
-        Py_ssize_t len = PyBytes_GET_SIZE(msg);
 
         //char *cipher_text;
         // std::cout << "Received Byte Size: " << len << std::endl;
@@ -148,6 +147,6 @@ static struct PyModuleDef pySpeck = {
     CryptoLightMethods 
 };
 
-PyMODINIT_FUNC PyInit_CryptoLight(void) {
+PyMODINIT_FUNC PyInit_CryptoLightFunctions(void) {
     return PyModule_Create(&pySpeck);
 }
