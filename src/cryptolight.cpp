@@ -20,13 +20,15 @@ using namespace CryptoPP;
 AutoSeededRandomPool rng;
 
 int cGenerateKey(void) {
-    /* @Params: None
+    /* 
+     * @Params: None
      * @Return: None
      * @Description: Generates a encryption key and writes it to a file in the 
      * current directory of caller. This key can be extracted by the encryption
      * and decryption functions. Both encryption algorithms have the same key
      * length, so SPECK128::DEFAULT_KEYLENGTH is used for both.
     */
+
     SecByteBlock key(SPECK128::DEFAULT_KEYLENGTH);
     rng.GenerateBlock(key, key.size());
     ArraySource as(key, sizeof(key), true, new FileSink("key.bin"));
@@ -35,12 +37,14 @@ int cGenerateKey(void) {
 }
 
 std::string cSpeckEncrypt(char *plain_text) {
-    /* @Params: plain_text to be encrypted
+    /* 
+     * @Params: plain_text to be encrypted
      * @Return: initialization vector concatonated with encrypted plain text
      * @Description: Encrypts plain text with Cipher Blockchaining Mode. The 
      * initialization vector used to encrypt the plain text is concatonated 
      * to the front of the cipher text.
     */
+
     std::string cipher_text, iv_string;
     // read key from file
     SecByteBlock key(SPECK128::DEFAULT_KEYLENGTH);
@@ -64,11 +68,13 @@ std::string cSpeckEncrypt(char *plain_text) {
 }
 
 std::string cSpeckDecrypt(std::string aggregate_str) {
-    /* @Params: aggregate_str -> the IV + cipher text
+    /* 
+     * @Params: aggregate_str -> the IV + cipher text
      * @Return: decrypted cipher text
      * @Description: Extracts iv and plain text from the aggregate_str and decrypts
      * the cipher text
     */
+
     std::string plain_text;
 
     byte iv[SPECK128::BLOCKSIZE];
@@ -90,12 +96,14 @@ std::string cSpeckDecrypt(std::string aggregate_str) {
 }
 
 std::string cSimonEncrypt(char *plain_text) {
-    /* @Params: plain_text to be encrypted
+    /* 
+     * @Params: plain_text to be encrypted
      * @Return: initialization vector concatonated with encrypted plain text
      * @Description: Encrypts plain text with Cipher Blockchaining Mode. The 
      * initialization vector used to encrypt the plain text is concatonated 
      * to the front of the cipher text.
     */
+
     std::string cipher_text, iv_string;
     // read key from file
     SecByteBlock key(SIMON128::DEFAULT_KEYLENGTH);
@@ -119,7 +127,8 @@ std::string cSimonEncrypt(char *plain_text) {
 }
 
 std::string cSimonDecrypt(std::string aggregate_str) {
-    /* @Params: aggregate_str -> the IV + cipher text
+    /* 
+     * @Params: aggregate_str -> the IV + cipher text
      * @Return: decrypted cipher text
      * @Description: Extracts iv and plain text from the aggregate_str and decrypts
      * the cipher text
@@ -150,7 +159,8 @@ static PyObject *generateKey(PyObject *self, PyObject *args) {
 }
 
 static PyObject *speckEncrypt(PyObject *self, PyObject *args) {
-    /* @Description: Middle man function. Translates Python args to C datatypes
+    /* 
+     * @Description: Middle man function. Translates Python args to C datatypes
      * and vice versa 
     */
     char *msg;
@@ -165,7 +175,8 @@ static PyObject *speckEncrypt(PyObject *self, PyObject *args) {
 }
 
 static PyObject *speckDecrypt(PyObject *self, PyObject *args) {
-    /* @Description: Middle man function. Translates Python args to C datatypes
+    /* 
+     * @Description: Middle man function. Translates Python args to C datatypes
      * and vice versa 
     */
     PyObject* msg;
@@ -182,7 +193,8 @@ static PyObject *speckDecrypt(PyObject *self, PyObject *args) {
 }
 
 static PyObject *simonEncrypt(PyObject *self, PyObject *args) {
-    /* @Description: Middle man function. Translates Python args to C datatypes
+    /* 
+     * @Description: Middle man function. Translates Python args to C datatypes
      * and vice versa 
     */
     char *msg;
@@ -197,7 +209,8 @@ static PyObject *simonEncrypt(PyObject *self, PyObject *args) {
 }
 
 static PyObject *simonDecrypt(PyObject *self, PyObject *args) {
-    /* @Description: Middle man function. Translates Python args to C datatypes
+    /* 
+     * @Description: Middle man function. Translates Python args to C datatypes
      * and vice versa 
     */
     PyObject* msg;
