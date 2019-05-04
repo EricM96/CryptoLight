@@ -75,7 +75,7 @@ def test():
         time.sleep(1)
 
 def main():
-    # c = CryptoLight("Speck")
+    # c = CryptoLight("Simon")
 
     c = AES_Crypt()
 
