@@ -1,5 +1,8 @@
 """
 @Author: Eric McCullough
+@Description: The C/Python API allows for the exporting of functions, but exporting
+objects can be very difficult. To bypass this, this file provides a Python object
+oriented interface for the functions contained in cryptolight.cpp
 """
 
 import CryptoLightFunctions
