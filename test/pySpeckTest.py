@@ -1,23 +1,29 @@
 import CryptoLightFunctions
-import random, string, time
+import random, string, time, sys
 
 class CryptoLight(object):
-    def __init__(self):
+    def __init__(self, mode):
         CryptoLightFunctions.generateKey()
+        if mode == "Simon":
+            self.encrypt_function = CryptoLightFunctions.simonEncrypt
+            self.decrypt_function = CryptoLightFunctions.simonDecrypt
+        elif mode == "Speck":
+            self.encrypt_function = CryptoLightFunctions.speckEncrypt
+            self.decrypt_function = CryptoLightFunctions.speckDecrypt
 
     def encrypt(self, plaintext):
-        ciphertext = CryptoLightFunctions.encrypt(plaintext)
+        ciphertext = self.encrypt_function(plaintext)
         while b'\x00' in ciphertext:
-            ciphertext = CryptoLightFunctions.encrypt(plaintext)
+            ciphertext = self.encrypt_function(plaintext)
         return ciphertext
 
     def decrypt(self, ciphertext):
-        return CryptoLightFunctions.decrypt(ciphertext)
+        return self.decrypt_function(ciphertext)
 
 
 def main():
     while True:
-        c = CryptoLight()
+        c = CryptoLight(sys.argv[1])
         letters = string.ascii_lowercase
         plaintext = ''.join(random.choice(letters) for i in range(100)).encode()
         print(plaintext)
@@ -31,4 +37,4 @@ def main():
         time.sleep(1)
     
 if __name__ == "__main__":
-    main() 
+    main()
