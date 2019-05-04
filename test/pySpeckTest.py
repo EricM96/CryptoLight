@@ -3,6 +3,10 @@ import random, string, time, sys
 
 class CryptoLight(object):
     def __init__(self, mode):
+        """
+        @Params: mode -> Simon or Speck. Encryption functions are configured 
+        accordingly
+        """
         CryptoLightFunctions.generateKey()
         if mode == "Simon":
             self.encrypt_function = CryptoLightFunctions.simonEncrypt
@@ -12,6 +16,14 @@ class CryptoLight(object):
             self.decrypt_function = CryptoLightFunctions.speckDecrypt
 
     def encrypt(self, plaintext):
+        """
+        @Params: plaintext -> plaintext to encrypt
+        @Description: encryption within the C++ module can lead to a bytestring
+        containing a null byte. This breaks the C/Python API's ability to pass 
+        the resulting bytestring to the C++ module's decryption function. To bypass
+        this, the encryption function is set in a while loop until no null bytes
+        are within the the ciphertext. 
+        """
         ciphertext = self.encrypt_function(plaintext)
         while b'\x00' in ciphertext:
             ciphertext = self.encrypt_function(plaintext)
