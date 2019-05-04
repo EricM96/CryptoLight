@@ -1,3 +1,7 @@
+"""
+@Author: Eric McCullough
+"""
+
 import CryptoLightFunctions
 import random, string, time, sys
 
