@@ -235,7 +235,7 @@ static PyMethodDef CryptoLightMethods[] = {
     {NULL, NULL, 0, NULL} // Sentinel 
 };
 
-static struct PyModuleDef pySpeck = {
+static struct PyModuleDef cryptoLight = {
     PyModuleDef_HEAD_INIT,
     "CryptoLight",
     "CryptoLight",
@@ -244,5 +244,5 @@ static struct PyModuleDef pySpeck = {
 };
 
 PyMODINIT_FUNC PyInit_CryptoLightFunctions(void) {
-    return PyModule_Create(&pySpeck);
+    return PyModule_Create(&cryptoLight);
 }

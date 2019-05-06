@@ -15,7 +15,7 @@ smart medical technology), there has been concern among experts that these syste
 are highly insecure. These devices are often much smaller than a traditional
 computer and do not have access to the computational resources necessary to
 implement the security mechanisms common to the Internet. Medical technology
-is often used as an example to illustrate the shortcomings of Internet of Things
+is often used as an example to illustrate the deficiencies of Internet of Things
 security. While having embedded medical technology, such as pacemakers, connected
 to the Internet is highly desirable to health care professionals in order to
 give them access to real-time, potentially life-saving data, you do not want
@@ -41,9 +41,30 @@ keys and blocks.
 
 ## Design and Implementation 
 
+The following sections will describe each feature of the system and its implementation.
+To ensure thoroughness, I will provide snippets of critical source code and provide an 
+explanation for its functionality and design. 
+
+When creating a new extension for the Python interpreter, you implement C/C++ code to 
+carry out the operations you want the library to have and utilize the C/Python to act 
+as a middleman between Python and your C++ code. Put differently, the C/Python API acts 
+as a translator, taking Python data objects and turning them into C data types and vice versa. 
+
+While the C/Python API provides an interface for passing data from Python to C/C++ functions,
+there does not exist an intuitive way of exporting a C++ class as a module. To preserve 
+object oriented design principles, I implemented the functions for CryptoLight and provided
+a Python object oriented interface to organize those functions into a class. This breaks the
+project into four distinct categories of code: the object oriented interface, the C/Python
+API translation functions, the C/C++ cryptography functions, and the C/Python API code for
+exporting the C++ code as a Python library. The following sections will cover these in 
+sequence. 
+
+### Object Oriented Interface
 The design for the module is fairly simple, as seen in the Python object oriented
-interface for the library found in `test/pySpeckTest.py` in the repository.
+interface for the library found in `test/pySpeckTest.py` in the repository. 
 ```python
+import CryptoLightFunctions
+
 class CryptoLight(object):
     def __init__(self, mode):
         CryptoLightFunctions.generateKey()
@@ -84,17 +105,28 @@ a favorable effect on the performance of the cipher, it had to be done to meet
 the deadline for the project. To prevent this from entirely tanking the performance
 of the module, it is preferable to break large amounts of data into chunks before
 passing it the the encrypt function to lower the probability of a null byte being
-contained in the ciphertext. 
+contained in the ciphertext. The decryption method is much more straight forward, as
+it simply needs to call the selected decryption function and return the result.
 
-Now that we have discussed the overarching design for the project, let us turn our
-attention to the implementation details. The majority of the work for this project
+### C/Python API Translation Functions 
+
+The majority of the work for this project
 was learning how to utilize the C/Python API to pass Python objects to C/C++ code,
 translate the Python data into a standard C/C++ data type, and reversing the 
-process to return a result to the Python caller. Once a method for this was 
-finalized, the process for encrypting and decrypting data was nearly identical 
-for the two ciphers, so to reduce redundancy I will only step through the code for
-the Speck cipher. The following function is responsible for acting as the middle
-man between Python and C++ for the encryption function.
+process to return a result to the Python caller. Similar to how parallel computing
+projects are notoriously difficult to debug, the C/Python API offers no assistance 
+to the programmer in regard to identifying problems in their code. I also found the
+documentation for the API's extensive library to be rather unhelpful in that many of 
+the functions have similar names and descriptions, when in reality they each serve a 
+highly specific purpose that I had to discover through brute trial and error. Failure
+to utilize a function for its single specific purpose leads to a generic 
+segmentation fault, and does not provide information on what line, file, or function 
+caused the error.  
+
+Once this method was finalized however, it was essentially identical for both the 
+Simon and Speck code, so to reduce redundancy, I will just go over the code pertaining
+to Speck. The following function, found in `src/cryptolight.cpp` is responsible for acting 
+as the middle man between Python and C++ for the encryption function.
 ```C++
 static PyObject *speckEncrypt(PyObject *self, PyObject *args) {
     char *msg;
@@ -142,6 +174,8 @@ and parses it into a null terminated C++ string. This string is passed to the C+
 decryption function and the resulting string is translated back into `PyBytes`
 and returned to the caller.
 
+### Encryption and Decryption Functions
+
 Now that we have discussed how values are passed to and from Python, let's turn
 our attention to the actual encryption and decryption functions. These were 
 implemented using CryptoPP's extensive library of cryptography modules. Again,
@@ -176,8 +210,9 @@ std::string cSpeckEncrypt(char *plain_text) {
 The first line declares string variables that will contain the ciphertext and
 initialization vector respectively. Then, they key is extracted from its file and
 translated into CryptoPP's `SecByteBlock` format. The next three lines of code
-create a random initialization vector and read a string translation into the 
-`iv_string` variable. A CBC mode encryption object is then created using the
+creates a random initialization vector using a global CryptoPP random number generator 
+ and reads a string translation into the 
+`iv_string` variable. A `CBC_Mode` encryption object is then created using the
 `SPECK128` scheme and outfitted with the key and initialization vector. The 
 `plain_text` variable is then pumped through a transformation filter that applies
 the encryption function and saves the resulting ciphertext to the `cipher_text` 
@@ -210,11 +245,79 @@ std::string cSpeckDecrypt(std::string aggregate_str) {
 First variables are made to hold the resulting plaintext and initialization vector.
 Then, the aggregate string from the encryption function is split between the 
 initialization vector and plaintext. The key is once again extracted from its file,
-and `iv_string` is translated back into its original `byte` form. A CBC mode 
+and `iv_string` is translated back into its original `byte` form. A `CBC_Mode` 
 decryption object is created and given the key and initialization vector, and,
 just as before, the ciphertext is sent through a transformation filter that applies
 the decryption operation to it. The resulting plaintext is saved to the `plain_text`
 variable and returned to the caller. 
+
+### Creating the Module 
+
+The process by which the C++ code into a Python module is fairly boiler plate, and simply
+requires providing the proper configuration variables and files. In the C++ code, you must
+organize your functions into a `PyMethodDef` array. The method array for CryptoLight is shown 
+below
+```C++
+static PyMethodDef CryptoLightMethods[] = {
+    {"generateKey", generateKey, METH_NOARGS, "Generates key for encryption and stores it in a file"},
+    {"speckEncrypt", speckEncrypt, METH_VARARGS, "Encrypts bytestring"},
+    {"speckDecrypt", speckDecrypt, METH_VARARGS, "Decrypts bytestring"},
+    {"simonEncrypt", simonEncrypt, METH_VARARGS, "Encrypts bytestring"},
+    {"simonDecrypt", simonDecrypt, METH_VARARGS, "Decrypts bytestring"},
+    {NULL, NULL, 0, NULL} // Sentinel 
+};
+```
+Each item in the array corresponds to a function that will exist in the Python module. The first
+entry in each item is the name of the function that will be callable from Python. The second is the
+C++ function that it corresponds to (I used the same name for both). Note that only the translation
+functions are exported, as calls to the C++ encryption and decryption functions are embedded in the
+translation functions. The third item in each entry uses a macro from the C/Python API to indicate
+what type of arguments the functions expect. This is almost always `METH_VARARGS` except for the case
+of the `generateKey` function, which does not expect arguments. The last item in each entry provides
+a short description of what that function does. The last entry, containing NULL values, is a sentinel
+value which indicates the end of the `PyMethodDef`. 
+
+After the `PyMethodDef` struct is created, it is used to create a `PyModuleDef` struct, which
+provides more information about the module as a whole. Here's the `PyModuleDef` for CryptoLight
+```C++
+static struct PyModuleDef cryptoLight = {
+    PyModuleDef_HEAD_INIT,
+    "CryptoLight",
+    "CryptoLight",
+    -1,
+    CryptoLightMethods 
+};
+```
+This provides the name, a description of, the number of methods (-1 makes it dynamically sized to
+the size of the `PyMethodDef`), and the `PyMethodDef` array. After this struct is made, all that
+is left is passing it to a generic `PyMODINIT_FUNC` function that creates the module object.
+```C++
+PyMODINIT_FUNC PyInit_CryptoLightFunctions(void) {
+    return PyModule_Create(&cryptoLight);
+}
+```
+This invokes built in functions in the C/Python API to take the struct and create a library
+object from it; however, in lue of a MAKE file, you must provide a Python `setup.py` script
+to provide information on how to compile and build the library.
+```Python
+from distutils.core import setup, Extension
+
+CryptoLightFunctions = Extension("CryptoLightFunctions", 
+                                       sources=["cryptolight.cpp"],
+                                       libraries=["cryptopp"],
+                                       )
+
+setup(name="CryptoLightFunctions",
+      version="0.1",
+      description="Performant simon and speck code for Python IoT systems.",
+      ext_modules=[CryptoLightFunctions])
+```
+First, an Extension object is created and given the name of the `PyMethodDef` in
+the C++ source, a list containing all of the C++ source files for the new module,
+and any libraries the source files depend on. Then the `setup` function is called
+and provided the name it should give the extension object, the version number,
+a description, and a list of the `Extension` objects to be included in the 
+library. 
 
 ## Performance
 
@@ -235,6 +338,15 @@ The following table describes the results.
 | Simon   | 0.09959697723388672
 | Speck   | 0.09698772430419922
 | AES     | 0.1481614112854004
+
+As expected, Simon and Speck both outstripped AES in terms of speed, but the degree
+to which it does is not reflective of the vast difference in computational
+complexity between the lightweight ciphers and AES. This could be due to the size of 
+the test data file not being enough to allow the lightweight ciphers to show their 
+performance benefits, but it seems more likely that my implementations are simply
+inefficient. Pycryptodome is implemented and maintained by a full team of expert developers, 
+who are likely far more knowledgeable than I am when it comes to writing cryptography
+software. 
 
 ## Retrospective
 
