@@ -174,12 +174,31 @@ and parses it into a null terminated C++ string. This string is passed to the C+
 decryption function and the resulting string is translated back into `PyBytes`
 and returned to the caller.
 
-### Encryption and Decryption Functions
+### Cipher Functions
 
 Now that we have discussed how values are passed to and from Python, let's turn
-our attention to the actual encryption and decryption functions. These were 
-implemented using CryptoPP's extensive library of cryptography modules. Again,
-the Simon and Speck code are nearly identical, so I will only go over Speck. In
+our attention to the actual functions of the cipher. These were 
+implemented using CryptoPP's extensive library of cryptography modules. 
+```C++
+AutoSeededRandomPool rng;
+
+int cGenerateKey(void) {
+    SecByteBlock key(SPECK128::DEFAULT_KEYLENGTH);
+    rng.GenerateBlock(key, key.size());
+    ArraySource as(key, sizeof(key), true, new FileSink("key.bin"));
+
+    return 0;
+}
+```
+First, a random number generator, `rng` is initialized using CryptoPP's library. This
+rng is initialized in the global scope so that it can be called on by encryption function
+and the key generation function without the need to generate a new one every time. Then,
+`cGenerateKey` uses this rng to create a 128 bit key, which is written to a file within
+the library's current directory. This key can then be extracted from this file and used
+for the subsequent encryption and decryption functions. 
+
+Next, let's take a closer look at the encryption and decryption functions used in CryptoLight.
+Again, the Simon and Speck code are nearly identical, so I will only go over Speck. In
 order to make the Speck code work for Simon, one only needs to change all the calls
 to features of `SPECK128` to `SIMON128`. The following function handles encryption
 for Speck. 
