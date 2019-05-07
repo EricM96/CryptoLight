@@ -307,8 +307,8 @@ static struct PyModuleDef cryptoLight = {
     CryptoLightMethods 
 };
 ```
-This provides the name, a description of, the number of methods (-1 makes it dynamically sized to
-the size of the `PyMethodDef`), and the `PyMethodDef` array. After this struct is made, all that
+This provides the name, a description of, the `-1` indicates that the module has a global state
+and doesn't support sub-interpreters, and the `PyMethodDef` array. After this struct is made, all that
 is left is passing it to a generic `PyMODINIT_FUNC` function that creates the module object.
 ```C++
 PyMODINIT_FUNC PyInit_CryptoLightFunctions(void) {
