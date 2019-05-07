@@ -29,7 +29,7 @@ constrained systems. While they are both highly performant in constrained
 environments, Speck ciphers are optimized towards hardware constrained devices
 while Simon ciphers favor software constrained environments. This was accomplished
 by designing Simon ciphers around bitwise AND operations and Speck ciphers around
-modular addition.
+modular addition.<sup>[1]</sup>
 
 For my final project, I wanted to gain a better familiarity with these ciphers
 by implementing an extension to the Python interpreter that would make these
@@ -57,7 +57,7 @@ a Python object oriented interface to organize those functions into a class. Thi
 project into four distinct categories of code: the object oriented interface, the C/Python
 API translation functions, the C++ cryptography functions, and the C/Python API code for
 exporting the C++ code as a Python library. The following sections will cover these in 
-sequence. 
+sequence. <sup>[3]</sup>
 
 ### Object Oriented Interface
 The design for the module is fairly simple, as seen in the Python object oriented
@@ -172,7 +172,7 @@ to a Python object. This is because a the `"y"` sometimes fails when handling
 encrypted bytes. `PyBytes_AsString` provides a method for taking the PyBytes
 and parses it into a null terminated C++ string. This string is passed to the C++
 decryption function and the resulting string is translated back into `PyBytes`
-and returned to the caller.
+and returned to the caller. <sup>[3]</sup>
 
 ### Cipher Functions
 
@@ -268,7 +268,7 @@ and `iv_string` is translated back into its original `byte` form. A `CBC_Mode`
 decryption object is created and given the key and initialization vector, and,
 just as before, the ciphertext is sent through a transformation filter that applies
 the decryption operation to it. The resulting plaintext is saved to the `plain_text`
-variable and returned to the caller. 
+variable and returned to the caller. <sup>[2]</sup>
 
 ### Creating the Module 
 
@@ -336,7 +336,7 @@ the C++ source, a list containing all of the C++ source files for the new module
 and any libraries the source files depend on. Then the `setup` function is called
 and provided the name it should give the extension object, the version number,
 a description, and a list of the `Extension` objects to be included in the 
-library. 
+library. <sup>[3]</sup>
 
 ## Performance
 
@@ -360,15 +360,15 @@ The following table describes the results.
 
 As expected, Simon and Speck both outstripped AES in terms of speed, but the degree
 to which it does is not reflective of the vast difference in computational
-complexity between the lightweight ciphers and AES. This could be due to the size of 
+complexity between the lightweight ciphers and AES.<sup>[1]</sup> This could be due to the size of 
 the test data file not being enough to allow the lightweight ciphers to show their 
 performance benefits, but it seems more likely that my implementations are simply
 inefficient. Pycryptodome is implemented and maintained by a full team of expert developers, 
 who are likely far more knowledgeable than I am when it comes to writing cryptography
-software. Regardless, this experiment does demonstrate that Simon and Speck can outsrip
+software.<sup>[4]</sup> Regardless, this experiment does demonstrate that Simon and Speck can outsrip
 AES in speed of encryption. The simplicity of Simon and Speck could indeed make or break
 the ability of constrained devices to cary out enciphering and deciphering in time
-and safety critical functions. 
+and safety critical functions. <sup>[1]</sup>
 
 ## Retrospective
 
@@ -386,3 +386,4 @@ though, stick with plain C++ (or Rust, to avoid the segmentation faults entirely
 1. Beaulieu R, Shors D, Smith J, Clark ST, Weeks B, Wingers L (2017) Notes on the design and analysis of SIMON and SPECK. IACR Cryptology ePrint Archive 560
 2. "Crypto++ Library 8.2 | Free C++ Class Library of Cryptographic Schemes", Cryptopp.com, 2019. [Online]. Available: https://www.cryptopp.com/. [Accessed: 04- May- 2019].
 3. Python/C API Reference Manual — Python 3.7.3 documentation", Docs.python.org, 2019. [Online]. Available: https://docs.python.org/3/c-api/. [Accessed: 04- May- 2019].
+4. “Welcome to PyCryptodome's documentation¶,” Welcome to PyCryptodome's documentation - PyCryptodome 3.8.1 documentation. [Online]. Available: https://pycryptodome.readthedocs.io/en/latest/. [Accessed: 07-May-2019].
