@@ -46,8 +46,8 @@ To ensure thoroughness, I will provide snippets of critical source code and prov
 explanation for its functionality and design. 
 
 When creating a new extension for the Python interpreter, you implement C/C++ code to 
-carry out the operations you want the library to have and utilize the C/Python to act 
-as a middleman between Python and your C++ code. Put differently, the C/Python API acts 
+carry out the operations you want the library to have and utilize the C/Python API to act 
+as a middleman between Python and your C++ code. Put simply, the C/Python API acts 
 as a translator, taking Python data objects and turning them into C data types and vice versa. 
 
 While the C/Python API provides an interface for passing data from Python to C/C++ functions,
@@ -55,7 +55,7 @@ there does not exist an intuitive way of exporting a C++ class as a module. To p
 object oriented design principles, I implemented the functions for CryptoLight and provided
 a Python object oriented interface to organize those functions into a class. This breaks the
 project into four distinct categories of code: the object oriented interface, the C/Python
-API translation functions, the C/C++ cryptography functions, and the C/Python API code for
+API translation functions, the C++ cryptography functions, and the C/Python API code for
 exporting the C++ code as a Python library. The following sections will cover these in 
 sequence. 
 
@@ -324,7 +324,7 @@ library.
 To benchmark the performance of CryptoLight, I saved the text of random Wikipedia
 pages to a text file until it reached a size of about 200 kB. This text was then
 broken into chunks and fed through the encryption function and saved to another 
-text file. This text file was similarly sent through the decryption function and 
+text file. This enciphered text file was similarly sent through the decryption function and 
 saved to another text file to assure that the operations executed successfully. 
 This process was repeated for CryptoLight's Simon and Speck implementations as 
 well as Pycryptodome's AES implementation to see how they performed against a more
@@ -346,18 +346,21 @@ the test data file not being enough to allow the lightweight ciphers to show the
 performance benefits, but it seems more likely that my implementations are simply
 inefficient. Pycryptodome is implemented and maintained by a full team of expert developers, 
 who are likely far more knowledgeable than I am when it comes to writing cryptography
-software. 
+software. Regardless, this experiment does demonstrate that Simon and Speck can outsrip
+AES in speed of encryption. The simplicity of Simon and Speck could indeed make or break
+the ability of constrained devices to cary out enciphering and deciphering in time
+and safety critical functions. 
 
 ## Retrospective
 
 While I set out to learn more about the Simon and Speck family of ciphers, I did
-not end up learning very much about them outside of the papers written on them.
+not end up learning very much about them outside of their papers.
 Much of the implementation time, which was much longer than I anticipated, was 
-spent fighting and ardous war of attrition with the C/Python API as it threw
+spent fighting an ardous war of attrition with the C/Python API as it threw
 segmentation faults for nearly every line of code I wrote. I did, however, learn
-alot about how Python really works under the hood, and I would recommend this 
+a lot about how Python really works under the hood, and I would recommend this 
 project readily to people who are interested in learning more about how 
-interpreters work. If you were like me and want to learn more about cryptography,
+interpreters work. If you were like me and want to learn more about cryptography
 though, stick with plain C++ (or Rust, to avoid the segmentation faults entirely).
 
 ## References 
